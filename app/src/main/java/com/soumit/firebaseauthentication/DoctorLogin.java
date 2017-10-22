@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
@@ -21,13 +20,14 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 
-import static android.R.id.input;
+import static android.icu.lang.UCharacter.GraphemeClusterBreak.L;
+import static com.soumit.firebaseauthentication.R.id.spinner;
 
 /**
- * Created by SOUMIT on 10/14/2017.
+ * Created by SOUMIT on 10/19/2017.
  */
 
-public class LoginActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class DoctorLogin extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private EditText inputEmail, inputPassword;
     private FirebaseAuth auth;
@@ -35,7 +35,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
     private Button btnSignup, btnLogin, btnReset;
 
     private Spinner spinner;
-    private static final String[]paths = {"Patient", "Doctor"};
+    private static final String[]paths = {"Doctor", "Patient"};
 
 
     @Override
@@ -45,16 +45,16 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
         auth = FirebaseAuth.getInstance();
 
         if(auth.getCurrentUser() != null){
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            startActivity(new Intent(DoctorLogin.this, MainActivity.class));
             finish();
         }
 
-        setContentView(R.layout.activity_login);
+        setContentView(R.layout.doctor_login);
 
         /*spinner to select layout for patient and doctors*/
 
         spinner = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(LoginActivity.this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(DoctorLogin.this,
                 android.R.layout.simple_spinner_dropdown_item, paths);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -76,14 +76,14 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
         btnSignup.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(LoginActivity.this, SignupActivity.class));
+                startActivity(new Intent(DoctorLogin.this, SignupActivity.class));
             }
         });
 
         btnReset.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(LoginActivity.this, ResetPasswordActivity.class));
+                startActivity(new Intent(DoctorLogin.this, ResetPasswordActivity.class));
             }
         });
 
@@ -106,7 +106,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
                 progressBar.setVisibility(View.VISIBLE);
 
                 auth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                        .addOnCompleteListener(DoctorLogin.this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
 
@@ -116,10 +116,10 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
                                     if(password.length() < 6){
                                         inputPassword.setError(getString(R.string.minimum_password));
                                     }else {
-                                        Toast.makeText(LoginActivity.this, getString(R.string.auth_failed), Toast.LENGTH_SHORT).show();
+                                        Toast.makeText(DoctorLogin.this, getString(R.string.auth_failed), Toast.LENGTH_SHORT).show();
                                     }
                                 }else {
-                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                    Intent intent = new Intent(DoctorLogin.this, MainActivity.class);
                                     startActivity(intent);
                                     finish();
                                 }
@@ -139,8 +139,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
                 break;
             case 1:
-                startActivity(new Intent(LoginActivity.this, DoctorLogin.class));
-//                finish();
+                startActivity(new Intent(DoctorLogin.this, LoginActivity.class));
                 break;
         }
 
@@ -153,21 +152,3 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

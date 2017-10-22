@@ -16,7 +16,6 @@ import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -28,16 +27,16 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import static android.R.id.input;
-import static android.icu.lang.UCharacter.GraphemeClusterBreak.V;
+import static com.soumit.firebaseauthentication.R.id.address;
+import static com.soumit.firebaseauthentication.R.id.age;
 
 /**
- * Created by SOUMIT on 10/14/2017.
+ * Created by SOUMIT on 10/20/2017.
  */
 
-public class SignupActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class DoctorSignup extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
-    private static final String TAG = SignupActivity.class.getSimpleName();
+    private static final String TAG = DoctorSignup.class.getSimpleName();
     private EditText inputEmail, inputPassword;
     private Button btnSignIn, btnSignUp, btnResetPassword;
     private ProgressBar progressBar;
@@ -46,10 +45,10 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     private String userId;
 
     private Spinner spinner;
-    private static final String[]paths = {"Patient", "Doctor"};
+    private static final String[]paths = {"Doctor", "Patient"};
 
     //Patient DB info
-    private EditText inputNameDb, inputEmailDb, inputAgeDb, inputAddressDb;
+    private EditText inputNameDb, inputEmailDb, inputAddressDb, inputQualificationsDb;
     private Button btnSave;
     private DatabaseReference mFirebaseDatabase;
     private FirebaseDatabase mFirebaseInstance;
@@ -58,20 +57,19 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signup);
+        setContentView(R.layout.doctor_signup);
 
         auth = FirebaseAuth.getInstance();
 
-//        //extra validation
+//        //validation
 //        FirebaseUser currentUser = auth.getCurrentUser();
 //
 //        if(currentUser != null)
 //            userId = auth.getCurrentUser().getUid();
-        //---------------------------------------------
 
         //Spinner
         spinner = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(SignupActivity.this,
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(DoctorSignup.this,
                 android.R.layout.simple_spinner_dropdown_item, paths);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -91,18 +89,18 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         //Patient DB info
         inputNameDb = (EditText) findViewById(R.id.name);
         inputEmailDb = (EditText) findViewById(R.id.email);
-        inputAgeDb = (EditText) findViewById(R.id.age);
-        inputAddressDb = (EditText) findViewById(R.id.address);
+        inputQualificationsDb = (EditText) findViewById(R.id.qualifications);
+        inputAddressDb = (EditText) findViewById(address);
 
         mFirebaseInstance = FirebaseDatabase.getInstance();
         // get reference to 'users' node
-        mFirebaseDatabase = mFirebaseInstance.getReference("users");
+        mFirebaseDatabase = mFirebaseInstance.getReference("doctors");
 
 
         /*Loading profile picture*/
 /*
 
-        Glide.with(SignupActivity.this)
+        Glide.with(DoctorSignup.this)
                 .load("")
                 .override(100,100)
                 .into(proPic);
@@ -112,7 +110,7 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 //        btnResetPassword.setOnClickListener(new View.OnClickListener() {
 //            @Override
 //            public void onClick(View view) {
-//                startActivity(new Intent(SignupActivity.this, ResetPasswordActivity.class));
+//                startActivity(new Intent(DoctorSignup.this, ResetPasswordActivity.class));
 //            }
 //        });
 
@@ -132,8 +130,9 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
                 final String name = inputNameDb.getText().toString().trim();
                 String emailDb = inputEmailDb.getText().toString().trim();
-                final String age = inputAgeDb.getText().toString().trim();
+                final String qualifications = inputQualificationsDb.getText().toString().trim();
                 final String address = inputAddressDb.getText().toString().trim();
+                final String verificationCode = "1234";
 
                 if(TextUtils.isEmpty(email)){
                     Toast.makeText(getApplicationContext(), "Enter email address!", Toast.LENGTH_SHORT).show();
@@ -150,40 +149,35 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
                     return;
                 }
 
-
+//                // Check for already existed userId
+//                if (TextUtils.isEmpty(userId)) {
+//                    createUser(name, email, address, qualifications, verificationCode);
+//                } else {
+//                    updateUser(name, email, address, qualifications, verificationCode);
+//                }
 
                 progressBar.setVisibility(View.VISIBLE);
 
                 auth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
+                        .addOnCompleteListener(DoctorSignup.this, new OnCompleteListener<AuthResult>() {
                             @Override
                             public void onComplete(@NonNull Task<AuthResult> task) {
-                                //Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete: " +
+                                //Toast.makeText(DoctorSignup.this, "createUserWithEmail:onComplete: " +
                                 //  task.isSuccessful(), Toast.LENGTH_SHORT).show();
-                                Toast.makeText(SignupActivity.this, auth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
+                                Toast.makeText(DoctorSignup.this, auth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
                                 progressBar.setVisibility(View.GONE);
 
                                 if(!task.isSuccessful()){
-                                    Toast.makeText(SignupActivity.this, "Authentication failed." +
-                                    task.getException(), Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(DoctorSignup.this, "Authentication failed." +
+                                            task.getException(), Toast.LENGTH_SHORT).show();
                                 }else {
-
-                                    createUser(name, email, age, address);
-                                    startActivity(new Intent(SignupActivity.this, MainActivity.class));
+                                    createUser(name, email, address, qualifications, verificationCode);
+                                    startActivity(new Intent(DoctorSignup.this, MainActivity.class));
                                     finish();
                                 }
 
                             }
                         });
-
-
-//                // Check for already existed userId
-//                if (TextUtils.isEmpty(userId)) {
-//                    createUser(name, email, age, address);
-//                } else {
-//                    updateUser(name, email, age, address);
-//                }
-
             }
         });
 
@@ -191,22 +185,24 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
     //Patient DB info
 
-    private void createUser(String name, String email, String age, String address) {
+    private void createUser(String name, String email, String address,
+                            String qualifications, String verificationCode) {
         // TODO
         // In real apps this userId should be fetched
         // by implementing firebase auth
-        if (TextUtils.isEmpty(userId)) {
-//            userId = mFirebaseDatabase.push().getKey();
-
+//        if (TextUtils.isEmpty(userId)) {
+////            userId = mFirebaseDatabase.push().getKey();
 //            userId = auth.getCurrentUser().getUid();
-                    //extra validation
+//        }
+
         FirebaseUser currentUser = auth.getCurrentUser();
 
         if(currentUser != null)
             userId = auth.getCurrentUser().getUid();
-        }
 
-        Patient user = new Patient(name, email, age, address);
+
+
+        Doctor user = new Doctor(name, email, address, qualifications, verificationCode);
 
         mFirebaseDatabase.child(userId).setValue(user);
 
@@ -221,7 +217,7 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         mFirebaseDatabase.child(userId).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                Patient user = dataSnapshot.getValue(Patient.class);
+                Doctor user = dataSnapshot.getValue(Doctor.class);
 
                 // Check for null
                 if (user == null) {
@@ -229,7 +225,8 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
                     return;
                 }
 
-                Log.e(TAG, "User data is changed!" + user.name + ", " + user.email + "," + user.age + "," + user.address);
+                Log.e(TAG, "User data is changed!" + user.name + ", " + user.email +
+                         "," + user.address + ", " + user.qualifications + ", " + user.verificationCode);
 
 
                 // clear edit text
@@ -245,7 +242,8 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         });
     }
 
-    private void updateUser(String name, String email, String age, String address) {
+    private void updateUser(String name, String email, String address,
+                            String qualifications, String verificationCode) {
         // updating the user via child nodes
         if (!TextUtils.isEmpty(name))
             mFirebaseDatabase.child(userId).child("name").setValue(name);
@@ -253,11 +251,12 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         if (!TextUtils.isEmpty(email))
             mFirebaseDatabase.child(userId).child("email").setValue(email);
 
-        if(!TextUtils.isEmpty(age))
-            mFirebaseDatabase.child(userId).child("age").setValue(age);
-
         if(!TextUtils.isEmpty(address))
             mFirebaseDatabase.child(userId).child("address").setValue(address);
+
+        if(!TextUtils.isEmpty(qualifications)) {
+            mFirebaseDatabase.child(userId).child("qualifications").setValue(qualifications);
+        }
     }
 
 
@@ -284,10 +283,10 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
             case 0:
 
+//                finish();
                 break;
             case 1:
-                startActivity(new Intent(SignupActivity.this, DoctorSignup.class));
-//                finish();
+                startActivity(new Intent(DoctorSignup.this, SignupActivity.class));
                 break;
         }
     }
@@ -297,12 +296,3 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
     }
 }
-
-
-
-
-
-
-
-
-

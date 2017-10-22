@@ -20,6 +20,10 @@
         </activity>
         <activity android:name=".MainActivity" />
         <activity android:name=".SignupActivity" />
+        <activity android:name=".PatientDbInfo" />
+        <activity android:name=".DoctorLogin" />
+        <activity android:name=".DoctorSignup" />
+        <activity android:name=".ImageUpload" />
         <activity android:name=".ResetPasswordActivity"></activity>
     </application>
 
