@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -37,7 +38,7 @@ import static com.soumit.firebaseauthentication.R.id.age;
 public class DoctorSignup extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
 
     private static final String TAG = DoctorSignup.class.getSimpleName();
-    private EditText inputEmail, inputPassword;
+    private EditText inputEmail, inputPassword, inputConfPass;
     private Button btnSignIn, btnSignUp, btnResetPassword;
     private ProgressBar progressBar;
     private FirebaseAuth auth;
@@ -82,6 +83,7 @@ public class DoctorSignup extends AppCompatActivity implements AdapterView.OnIte
         btnSignUp = (Button) findViewById(R.id.sign_up_button);
         inputEmail = (EditText) findViewById(R.id.email);
         inputPassword = (EditText) findViewById(R.id.password);
+        inputConfPass = (EditText) findViewById(R.id.confpassword);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         btnResetPassword = (Button) findViewById(R.id.btn_reset_password);
         proPic = (ImageView) findViewById(R.id.pro_pic);
@@ -127,6 +129,7 @@ public class DoctorSignup extends AppCompatActivity implements AdapterView.OnIte
             public void onClick(View view) {
                 final String email = inputEmail.getText().toString().trim();
                 String password = inputPassword.getText().toString().trim();
+                String confpass = inputConfPass.getText().toString().trim();
 
                 final String name = inputNameDb.getText().toString().trim();
                 String emailDb = inputEmailDb.getText().toString().trim();
@@ -139,8 +142,18 @@ public class DoctorSignup extends AppCompatActivity implements AdapterView.OnIte
                     return;
                 }
 
+                if(!isValidEmailAddress(email)){
+                    Toast.makeText(getApplicationContext(), "Email address not valid!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
                 if(TextUtils.isEmpty(password)){
                     Toast.makeText(getApplicationContext(), "Enter password!", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if(TextUtils.isEmpty(confpass) || !password.equals(confpass)){
+                    Toast.makeText(getApplicationContext(), "Confirm password! ", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
@@ -164,15 +177,25 @@ public class DoctorSignup extends AppCompatActivity implements AdapterView.OnIte
                             public void onComplete(@NonNull Task<AuthResult> task) {
                                 //Toast.makeText(DoctorSignup.this, "createUserWithEmail:onComplete: " +
                                 //  task.isSuccessful(), Toast.LENGTH_SHORT).show();
-                                Toast.makeText(DoctorSignup.this, auth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
-                                progressBar.setVisibility(View.GONE);
+//                                Toast.makeText(DoctorSignup.this, auth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
+//                                progressBar.setVisibility(View.GONE);
 
                                 if(!task.isSuccessful()){
-                                    Toast.makeText(DoctorSignup.this, "Authentication failed." +
-                                            task.getException(), Toast.LENGTH_SHORT).show();
+                                    if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                                        Toast.makeText(DoctorSignup.this,
+                                                "User with this email already exist.", Toast.LENGTH_SHORT).show();
+                                        progressBar.setVisibility(View.GONE);
+                                    }else {
+                                        Toast.makeText(DoctorSignup.this, "Authentication failed." +
+                                                task.getException(), Toast.LENGTH_SHORT).show();
+                                        progressBar.setVisibility(View.GONE);
+                                    }
                                 }else {
-                                    createUser(name, email, address, qualifications, verificationCode);
-                                    startActivity(new Intent(DoctorSignup.this, MainActivity.class));
+
+                                    sendVerificationEmail(name, email, address, qualifications, verificationCode);
+
+//                                    createUser(name, email, address, qualifications, verificationCode);
+//                                    startActivity(new Intent(DoctorSignup.this, MainActivity.class));
                                     finish();
                                 }
 
@@ -182,6 +205,56 @@ public class DoctorSignup extends AppCompatActivity implements AdapterView.OnIte
         });
 
     }
+
+
+    /* Checking if email address is valid or not */
+
+    public boolean isValidEmailAddress(String email) {
+        String ePattern = "^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\])|(([a-zA-Z\\-0-9]+\\.)+[a-zA-Z]{2,}))$";
+        java.util.regex.Pattern p = java.util.regex.Pattern.compile(ePattern);
+        java.util.regex.Matcher m = p.matcher(email);
+        return m.matches();
+    }
+
+
+    /* Email verification method */
+
+    private void sendVerificationEmail(final String name, final String email, final String address, final String qualifications,
+                                       final String verificationCode)
+    {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        user.sendEmailVerification()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            // email sent
+
+                            createUser(name, email, address, qualifications, verificationCode);
+
+                            // after email is sent just logout the user and finish this activity
+                            FirebaseAuth.getInstance().signOut();
+                            startActivity(new Intent(DoctorSignup.this, DoctorLogin.class));
+                            finish();
+                        }
+                        else
+                        {
+                            // email not sent, so display message and restart the activity or do whatever you wish to do
+
+                            //restart this activity
+                            overridePendingTransition(0, 0);
+                            finish();
+                            overridePendingTransition(0, 0);
+                            startActivity(getIntent());
+
+                        }
+                    }
+                });
+    }
+
+    //
+
 
     //Patient DB info
 
