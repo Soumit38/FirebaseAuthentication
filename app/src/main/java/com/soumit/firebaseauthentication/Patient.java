@@ -12,6 +12,7 @@ public class Patient {
     public String email;
     public String  age;
     public String address;
+    public String imageUrl;
 
     public Patient(){
 

@@ -54,7 +54,9 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
     private Button btnSave;
     private DatabaseReference mFirebaseDatabase;
     private FirebaseDatabase mFirebaseInstance;
-    //
+
+    private DatabaseReference mDatabase;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -99,6 +101,10 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         mFirebaseInstance = FirebaseDatabase.getInstance();
         // get reference to 'users' node
         mFirebaseDatabase = mFirebaseInstance.getReference("users");
+
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mAuth = FirebaseAuth.getInstance();
+
 
 
         /*Loading profile picture*/
@@ -167,53 +173,109 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
                 progressBar.setVisibility(View.VISIBLE);
 
-                auth.createUserWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(SignupActivity.this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                //Toast.makeText(SignupActivity.this, "createUserWithEmail:onComplete: " +
-                                //  task.isSuccessful(), Toast.LENGTH_SHORT).show();
-
-                                //Toast.makeText(SignupActivity.this, auth.getCurrentUser().getUid(), Toast.LENGTH_SHORT).show();
-//                                progressBar.setVisibility(View.GONE);
-
-                                if(!task.isSuccessful()){
-                                    if (task.getException() instanceof FirebaseAuthUserCollisionException) {
-                                        Toast.makeText(SignupActivity.this,
-                                                "User with this email already exist.", Toast.LENGTH_SHORT).show();
-                                        progressBar.setVisibility(View.GONE);
-                                    }else {
-                                        Toast.makeText(SignupActivity.this, "Authentication failed." +
-                                                task.getException(), Toast.LENGTH_SHORT).show();
-                                        progressBar.setVisibility(View.GONE);
-                                    }
-                                }else {
-
-//                                    createUser(name, email, age, address);
-
-                                    /*Email verification*/
-                                    sendVerificationEmail(name, email, age, address);
-                                    progressBar.setVisibility(View.GONE);
-
-//                                    startActivity(new Intent(SignupActivity.this, MainActivity.class));
-                                    finish();
-                                }
-
-                            }
-                        });
-
-
-//                // Check for already existed userId
-//                if (TextUtils.isEmpty(userId)) {
-//                    createUser(name, email, age, address);
-//                } else {
-//                    updateUser(name, email, age, address);
-//                }
+                signUp();
 
             }
         });
 
     }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // Check auth on Activity start
+        if (mAuth.getCurrentUser() != null) {
+            onAuthSuccess(mAuth.getCurrentUser());
+        }
+    }
+
+
+    /**
+     * from android quickstart
+     */
+    private void signUp(){
+        Log.d(TAG, "signUp: ");
+
+        progressBar.setVisibility(View.VISIBLE);
+
+        String email = inputEmailDb.getText().toString();
+        String password = inputPassword.getText().toString();
+
+
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "createUser:onComplete:" + task.isSuccessful());
+                        progressBar.setVisibility(View.GONE);
+
+                        if (task.isSuccessful()) {
+                            onAuthSuccess(task.getResult().getUser());
+                        } else {
+                            Toast.makeText(SignupActivity.this, "Sign Up Failed",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+
+    private void onAuthSuccess(FirebaseUser currentUser){
+        String username = inputNameDb.getText().toString();
+        String age = inputAgeDb.getText().toString();
+        String address = inputAddressDb.getText().toString();
+
+        writeNewUser(currentUser.getUid(), username, currentUser.getEmail(), age, address);
+
+        sendVerificationEmail();
+
+        startActivity(new Intent(SignupActivity.this, LoginActivity.class));
+        auth.signOut();
+        finish();
+
+//        sendVerificationEmail();
+
+    }
+
+
+    private void writeNewUser(String userId, String name,
+                              String email, String age, String address){
+
+        Patient user = new Patient(name, email, age, address);
+
+        mDatabase.child("users")
+                .child(userId)
+                .setValue(user);
+
+//        mDatabase.child("users")
+//                .child(userId)
+//                .addValueEventListener(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(DataSnapshot dataSnapshot) {
+//                        Patient user = dataSnapshot.getValue(Patient.class);
+//
+//                        // Check for null
+//                        if (user == null) {
+//                            Log.e(TAG, "User data is null!");
+//                            return;
+//                        }
+//
+//                        Log.d(TAG, "User data is changed!" +
+//                                user.name + ", " + user.email + "," + user.age + "," + user.address);
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError error) {
+//                        // Failed to read value
+//                        Log.e(TAG, "Failed to read user", error.toException());
+//                    }
+//                });
+
+        Log.d(TAG, "writeNewUser: executed");
+    }
+
+
 
 
     /* Checking if email address is valid or not */
@@ -225,9 +287,34 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
         return m.matches();
     }
 
+
+    private void sendEmail(){
+
+        final FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+
+        user.sendEmailVerification()
+                .addOnCompleteListener( new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(SignupActivity.this,
+                                    "Verification email sent to " + user.getEmail(),
+                                    Toast.LENGTH_SHORT).show();
+                            Log.d(TAG, "onComplete: Email sent!");
+                        } else {
+                            Log.e(TAG, "sendEmailVerification", task.getException());
+                            Toast.makeText(SignupActivity.this,
+                                    "Failed to send verification email.",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                });
+    }
+
+
     /* Email verification method */
 
-    private void sendVerificationEmail(final String name, final String email, final String age, final String address)
+    private void sendVerificationEmail()
     {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
@@ -237,8 +324,6 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
                     public void onComplete(@NonNull Task<Void> task) {
                         if (task.isSuccessful()) {
                             // email sent
-
-                            createUser(name, email, age, address);
 
                             // after email is sent just logout the user and finish this activity
                             FirebaseAuth.getInstance().signOut();
@@ -262,9 +347,6 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
     //
 
-
-
-    //Patient DB info
 
     private void createUser(String name, String email, String age, String address) {
         // TODO
@@ -293,7 +375,9 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
      */
     private void addUserChangeListener() {
         // User data change listener
-        mFirebaseDatabase.child(userId).addValueEventListener(new ValueEventListener() {
+        mDatabase.child("users")
+                 .child(userId)
+                 .addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 Patient user = dataSnapshot.getValue(Patient.class);
@@ -304,12 +388,8 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
                     return;
                 }
 
-                Log.e(TAG, "User data is changed!" + user.name + ", " + user.email + "," + user.age + "," + user.address);
-
-
-                // clear edit text
-                inputEmail.setText("");
-                inputNameDb.setText("");
+                Log.d(TAG, "User data is changed!" +
+                        user.name + ", " + user.email + "," + user.age + "," + user.address);
             }
 
             @Override
@@ -337,14 +417,6 @@ public class SignupActivity extends AppCompatActivity implements AdapterView.OnI
 
 
 
-//    @Override
-//    public void onStart() {
-//        super.onStart();
-//        // Check if user is signed in (non-null) and update UI accordingly.
-//        FirebaseUser currentUser = auth.getCurrentUser();
-//        String userKey = currentUser.getUid();
-//        Log.d("User Key : ", userKey);
-//    }
 
     @Override
     protected void onResume(){

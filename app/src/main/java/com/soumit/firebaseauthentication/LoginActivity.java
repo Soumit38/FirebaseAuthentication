@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -21,8 +19,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-
-import static android.R.id.input;
 
 /**
  * Created by SOUMIT on 10/14/2017.
@@ -46,7 +42,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
         auth = FirebaseAuth.getInstance();
 
         if(auth.getCurrentUser() != null){
-            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            startActivity(new Intent(LoginActivity.this, Test.class));
             finish();
         }
 
@@ -126,10 +122,10 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
                                     }
                                 }else {
 
-                                    checkIfEmailVerified();
-//                                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-//                                    startActivity(intent);
-//                                    finish();
+//                                    checkIfEmailVerified();
+                                    Intent intent = new Intent(LoginActivity.this, Test.class);
+                                    startActivity(intent);
+                                    finish();
                                 }
                             }
                         });
@@ -170,6 +166,7 @@ public class LoginActivity extends AppCompatActivity implements AdapterView.OnIt
             // email is not verified, so just prompt the message to the user and restart this activity.
             // NOTE: don't forget to log out the user.
             FirebaseAuth.getInstance().signOut();
+            Toast.makeText(LoginActivity.this, "Email address not verfied yet !", Toast.LENGTH_SHORT).show();
 
             //restart this activity
 

@@ -23,8 +23,11 @@
         <activity android:name=".PatientDbInfo" />
         <activity android:name=".DoctorLogin" />
         <activity android:name=".DoctorSignup" />
-        <activity android:name=".ImageUpload" />
-        <activity android:name=".ResetPasswordActivity"></activity>
+        <activity android:name=".EditProfileAndUploadImage" />
+        <activity android:name=".ViewProfile" />
+        <activity android:name=".EditProfile" />
+        <activity android:name=".ResetPasswordActivity" />
+        <activity android:name=".Test"></activity>
     </application>
 
 </manifest>
