@@ -37,25 +37,6 @@
                 android:layout_marginRight="10dp"
                 android:layout_marginTop="20dp"/>
 
-            <!--<de.hdodenhof.circleimageview.CircleImageView-->
-            <!--android:id="@+id/profile_picture"-->
-            <!--android:src="@drawable/ic_alert"-->
-            <!--android:layout_gravity="center_horizontal"-->
-            <!--android:layout_marginBottom="30dp"-->
-            <!--android:layout_width="90dp"-->
-            <!--android:layout_height="90dp" />-->
-
-            <!--<Button-->
-                <!--android:id="@+id/edit_profile"-->
-                <!--android:text="Edit profile"-->
-                <!--android:textAllCaps="false"-->
-                <!--android:textSize="12dp"-->
-                <!--android:layout_marginTop="10dp"-->
-                <!--android:layout_marginBottom="20dp"-->
-                <!--android:layout_width="wrap_content"-->
-                <!--android:layout_height="wrap_content" />-->
-
-
             <LinearLayout
                 android:layout_gravity="center"
                 android:gravity="center"
@@ -93,6 +74,12 @@
             </LinearLayout>
 
 
+        <LinearLayout
+            android:id="@+id/nameLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
             <TextView
                 android:text="Name:"
                 android:textSize="14sp"
@@ -106,6 +93,8 @@
             <EditText
                 android:id="@+id/et_name"
                 android:textSize="16sp"
+                android:maxLines="1"
+                android:inputType="text"
                 android:layout_marginBottom="20dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
@@ -113,6 +102,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/emailLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <TextView
                 android:text="Email:"
@@ -127,6 +123,8 @@
             <EditText
                 android:id="@+id/et_email"
                 android:textSize="16sp"
+                android:maxLines="1"
+                android:inputType="text"
                 android:layout_marginBottom="20dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
@@ -134,29 +132,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+        </LinearLayout>
 
-
-            <TextView
-                android:text="Address:"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:layout_marginBottom="10dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-            <EditText
-                android:id="@+id/et_address"
-                android:textSize="16sp"
-                android:layout_marginBottom="20dp"
-                android:layout_marginLeft="20dp"
-                android:layout_marginRight="20dp"
-                android:background="@drawable/grey_border_bottom"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content" />
-
-
+        <LinearLayout
+            android:id="@+id/qualificationsLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <TextView
                 android:text="Qualifications:"
@@ -171,6 +153,8 @@
             <EditText
                 android:id="@+id/et_qualifications"
                 android:textSize="16sp"
+                android:maxLines="1"
+                android:inputType="text"
                 android:layout_marginBottom="20dp"
                 android:layout_marginLeft="20dp"
                 android:layout_marginRight="20dp"
@@ -178,6 +162,67 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/addressLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:text="Address:"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/et_address"
+                android:textSize="16sp"
+                android:maxLines="1"
+                android:inputType="text"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/grey_border_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/timeLayout"
+            android:orientation="vertical"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <TextView
+                android:text="Visiting hours:"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="10dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+            <EditText
+                android:id="@+id/et_time"
+                android:textSize="16sp"
+                android:maxLines="1"
+                android:inputType="text"
+                android:layout_marginBottom="20dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:background="@drawable/grey_border_bottom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
 
             <Button
                 android:id="@+id/update_profile"
